@@ -52,6 +52,10 @@ module.exports = function(grunt) {
   grunt.registerTask('stopPostgres', 'Kill Postgres',
     downService('Postgres', 'pg_ctl -D /usr/local/var/postgres stop -s -m fast'));
 
+  grunt.registerTask('stopSidekiq', 'Kill Sidekiq',
+    downService('Sidekiq', "ps -ef | grep sidekiq | grep -v grep | awk '{print $2}' | xargs kill -9"));
+  grunt.registerTask('stopNgrok', 'Kill Ngrok',
+    downService('Ngrok', "ps -ef | grep ngrok | grep -v grep | awk '{print $2}' | xargs kill -9"));
 
 
   grunt.registerTask('startRedis', 'Start Redis',
@@ -61,6 +65,11 @@ module.exports = function(grunt) {
   grunt.registerTask('startPostgres', 'Start Postgres',
     startService('Postgres', 'postgres',
     'pg_ctl -o "-h 127.0.0.1" -D /usr/local/var/postgres start'));
+
+  grunt.registerTask('startSidekiq', 'Start Sidekiq',
+    startService('Sidekiq', 'sidekiq', 'sidekiq -d -C config/sidekiq.yml -L log/sidekiq.log'));
+  grunt.registerTask('startNgrok', 'Start Ngrok',
+    startService('Ngrok', 'ngrok', 'ngrok -log=none -config=ngrok.yml start local > /dev/null &'));
 
 
   /**
@@ -93,7 +102,8 @@ module.exports = function(grunt) {
    *                            on to next operation.
    */
   function shellbg(command, cb) {
-    exec(command, {}, function( err ) {
+    console.log("execing");
+    exec(command, {}, function( err, out ) {
       if ( err ) {
         log.error( err );
         cb();
@@ -101,7 +111,7 @@ module.exports = function(grunt) {
       }
     });
     log.ok(['Command:' + command.yellow + ' run successfully']);
-    cb();
+    cb(); 
   }
 };
 
