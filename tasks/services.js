@@ -45,18 +45,25 @@ module.exports = function(grunt) {
     };
   }
 
+  function killService(service) {
+    return function () {
+      downService(service, 
+                  "ps -ef | grep "+service.toLowerCase()+" | grep -v grep | awk '{print $2}' | xargs kill -9").apply(this, arguments);
+    };
+  }
+
+  grunt.services = {
+    startService: startService,
+    stopService: downService,
+    killService: killService
+  };
+
   grunt.registerTask('stopRedis', 'Kill reddis',
     downService('Redis', 'redis-cli shutdown'));
   grunt.registerTask('stopMongo', 'Kill mongodb',
     downService('Mongodb', 'mongo admin --eval "db.shutdownServer()"'));
   grunt.registerTask('stopPostgres', 'Kill Postgres',
     downService('Postgres', 'pg_ctl -D /usr/local/var/postgres stop -s -m fast'));
-
-  grunt.registerTask('stopSidekiq', 'Kill Sidekiq',
-    downService('Sidekiq', "ps -ef | grep sidekiq | grep -v grep | awk '{print $2}' | xargs kill -9"));
-  grunt.registerTask('stopNgrok', 'Kill Ngrok',
-    downService('Ngrok', "ps -ef | grep ngrok | grep -v grep | awk '{print $2}' | xargs kill -9"));
-
 
   grunt.registerTask('startRedis', 'Start Redis',
     startService('Redis', 'redis-server', 'redis-server'));
@@ -65,12 +72,6 @@ module.exports = function(grunt) {
   grunt.registerTask('startPostgres', 'Start Postgres',
     startService('Postgres', 'postgres',
     'pg_ctl -o "-h 127.0.0.1" -D /usr/local/var/postgres start'));
-
-  grunt.registerTask('startSidekiq', 'Start Sidekiq',
-    startService('Sidekiq', 'sidekiq', 'sidekiq -d -C config/sidekiq.yml -L log/sidekiq.log'));
-  grunt.registerTask('startNgrok', 'Start Ngrok',
-    startService('Ngrok', 'ngrok', 'ngrok -log=none -config=ngrok.yml start local > /dev/null &'));
-
 
   /**
    * Checks if the define process is running
