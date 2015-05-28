@@ -28,6 +28,16 @@ All tasks are plain tasks, which means you have to include them in `grunt.regist
 * **stopMongo** Stop Mongodb database.
 * **stopPostgres** Stop Postgres database.
 
+### Custom services
+
+You can add custom services using something like this:
+```js
+grunt.registerTask('startSidekiq', 'Start Sidekiq',
+  grunt.services.startService('Sidekiq', 'sidekiq', 'sidekiq -d -C config/sidekiq.yml -L log/sidekiq.log'));
+
+grunt.registerTask('stopSidekiq', 'Kill Sidekiq',
+  grunt.services.killService('Sidekiq')
+);
 
 ### Sample Setup
 
